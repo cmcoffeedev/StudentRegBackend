@@ -17,39 +17,37 @@ const studentSchema = new Schema({
     lName: {type: "String", required: true},
     email: {type: "String", required:true}, 
     phone: {type: "String", required: true},
+    date: {type: Date, default: Date.now, required: true},
     status: {type: "Boolean", default: false, required:true}
 
 });
 
+//create student model
 const Student = mongoose.model("Student",studentSchema, "Students");
 
-//save a dummy student
-  const saveStudent = async() => {
+// Add a new Student document
+const addStudent = async(studentObj) => { 
+    try {
+        //create new student object 
+        const newStudent = new Student(studentObj); 
+        //save student to database
+        let savePromise = newStudent.save();  
+       
+        //return promise so we can print it after save
+        return savePromise;
+       
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
 
-    const student = new Student();
-    student.fName = "Chris";
-    student.lName = "Coffee";
-    student.email =  "cmcoffee@amarillocollege.com",
-    student.phone =  "8062368672",
-    student.status =  true
-   
-    student.save(function (err) {
-        console.log("saved data");
-        getAll();
-        //
-      });
-
-  }
 
   //get all students from the student collection
   const getAllStudents = async() => {
       try{
-          await Student.find().exec((err, StudentCollection) => {
-              if(err){
-                  console.log("error getting tree collection");
-              }
-              console.log({ StudentCollection });
-          });
+          //return Promise
+          return Student.find().exec();
       }
       catch(err){
           console.log("error is " + err);
@@ -57,6 +55,9 @@ const Student = mongoose.model("Student",studentSchema, "Students");
       }
 
   }
+
+
+  
 
 //connect to the database
 const connectToDB = async() => {
@@ -74,10 +75,31 @@ const connectToDB = async() => {
 }
 
 const main = async() => {
-    await connectToDB();
-    // await saveStudent();
-    await getAllStudents();
 
+    try{
+
+        await connectToDB();
+
+        //create new student object
+        const student = new Student();
+        student.fName = "Fred";
+        student.lName = "Johnson";
+        student.email =  "fred.johnson@amarillocollege.com";
+        student.phone =  "8062345383";
+        student.status =  true;
+        student.date =  Date.now();
+
+        //call addStudent to save the new student to the database
+        await addStudent(student);
+
+        //get and print the students in the database
+        let allStudents = await getAllStudents();
+        console.log("All Students: "  +  allStudents);
+
+    }
+    catch(error){
+        console.log(`main error: ${error}`);
+    }
 }
 
 
